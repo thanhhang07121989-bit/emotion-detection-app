@@ -155,19 +155,38 @@ st.markdown("---")
 if analyze_button and user_text:
     cleaned_text = normalize_text(user_text)
     if len(cleaned_text.split()) >= 3:
-        seq = tokenizer.texts_to_sequences([cleaned_text])
-        padded = pad_sequences(seq, maxlen=100)
-        predictions = model.predict(padded, verbose=0)[0]
-        
-        st.subheader("📊 CHI TIẾT TỪNG NHÃN")
-        
-        # FIX: Thêm .values để convert Series thành array
-        results_df = pd.DataFrame({
-            "Cảm xúc": label_map['label_name'].values,
-            "Xác suất (%)": (predictions * 100).round(2)
-        }).sort_values("Xác suất (%)", ascending=False)
-        
-        st.dataframe(results_df, use_container_width=True, height=400, hide_index=True)
-        st.bar_chart(results_df.head(10).set_index("Cảm xúc")["Xác suất (%)"])
+        try:
+            seq = tokenizer.texts_to_sequences([cleaned_text])
+            padded = pad_sequences(seq, maxlen=100)
+            predictions = model.predict(padded, verbose=0)[0]
+            
+            st.subheader("📊 CHI TIẾT TỪNG NHÃN")
+            
+            # Tạo DataFrame an toàn
+            emotion_names = label_map['label_name'].values
+            scores = (predictions * 100).round(2)
+            
+            # Ensure same length
+            min_len = min(len(emotion_names), len(scores))
+            emotion_names = emotion_names[:min_len]
+            scores = scores[:min_len]
+            
+            results_df = pd.DataFrame({
+                "Cảm xúc": emotion_names,
+                "Xác suất (%)": scores
+            }).sort_values("Xác suất (%)", ascending=False)
+            
+            st.dataframe(results_df, use_container_width=True, height=400, hide_index=True)
+            
+            # Biểu đồ - Safe version
+            try:
+                chart_data = results_df.head(10).copy()
+                chart_data = chart_data.set_index("Cảm xúc")
+                st.bar_chart(chart_data)
+            except Exception as chart_error:
+                st.warning(f"⚠️ Không thể hiển thị biểu đồ: {str(chart_error)}")
+                
+        except Exception as e:
+            st.error(f"❌ Lỗi phân tích: {str(e)}")
 
 st.markdown("🤖 Emotion Detection - CNN Model")
