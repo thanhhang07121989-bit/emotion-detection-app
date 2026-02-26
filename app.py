@@ -1,24 +1,29 @@
-# === GỘP 2 PHẦN MODEL ===
-import os
-
-if not os.path.exists('model_cnn.h5') and os.path.exists('model_part1.bin') and os.path.exists('model_part2.bin'):
-    with open('model_part1.bin', 'rb') as f:
-        data1 = f.read()
-    with open('model_part2.bin', 'rb') as f:
-        data2 = f.read()
-    with open('model_cnn.h5', 'wb') as f:
-        f.write(data1 + data2)
-# === HẾT GỘP ===
-
 import streamlit as st
 import numpy as np
 import pandas as pd
 import pickle
 import re
+import os
 from tensorflow import keras
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import warnings
 warnings.filterwarnings('ignore')
+
+# === GỘP 2 PHẦN MODEL ===
+@st.cache_resource
+def prepare_model():
+    if not os.path.exists('model_cnn.h5'):
+        if os.path.exists('model_part1.bin') and os.path.exists('model_part2.bin'):
+            with open('model_part1.bin', 'rb') as f:
+                data1 = f.read()
+            with open('model_part2.bin', 'rb') as f:
+                data2 = f.read()
+            with open('model_cnn.h5', 'wb') as f:
+                f.write(data1 + data2)
+    return True
+
+prepare_model()
+# === HẾT GỘP ===
 
 st.set_page_config(page_title="Emotion Detection CNN", page_icon="🤖", layout="wide")
 
@@ -26,14 +31,17 @@ st.title("🤖 Phân Tích Cảm Xúc Văn Bản")
 st.markdown("**Model:** CNN | **Nhãn:** 28 cảm xúc | **Dataset:** GoEmotions")
 st.markdown("---")
 
-# Load model - Cached
+# Load model
 @st.cache_resource
 def load_models():
     try:
         model = keras.models.load_model('model_cnn.h5')
+        
         with open('tokenizer.pkl', 'rb') as f:
             tokenizer = pickle.load(f)
+        
         label_map = pd.read_csv('label_map.csv')
+        
         return model, tokenizer, label_map
     except Exception as e:
         st.error(f"❌ Lỗi: {str(e)}")
@@ -102,7 +110,8 @@ with col2:
                 
                 st.success(f"✅ Phát hiện {len(emotions)} cảm xúc")
                 for e in emotions[:5]:
-                    st.info(f"😊 {e.capitalize()}")
+                    # FIX: Convert to string trước
+                    st.info(f"😊 {str(e).capitalize()}")
 
 st.markdown("---")
 
