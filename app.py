@@ -9,17 +9,21 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 import warnings
 warnings.filterwarnings('ignore')
 
-# === THÊM CODE NÀY ===
 import gdown
+import tempfile
 
 # Download model từ Google Drive
-if not os.path.exists('model_cnn.h5'):
-    st.warning("📥 Đang tải model từ Google Drive... (lần đầu khoảng 3-5 phút)")
-    file_id = '1vjCqFWmWEQeVEofVJvn-J6eNhE4GdiEI'  # ← ID của bạn
-    url = f'https://drive.google.com/uc?id={file_id}'
-    gdown.download(url, 'model_cnn.h5', quiet=False)
-    st.success("✅ Tải model xong!")
-# === HẾT CODE THÊM ===
+model_file = 'model_cnn.h5'
+if not os.path.exists(model_file):
+    try:
+        st.warning("📥 Đang tải model từ Google Drive (lần đầu ~3-5 phút)...")
+        file_id = '1vjCqFWmWEQeVEofVJvn-J6eNhE4GdiEI'
+        url = f'https://drive.google.com/uc?id={file_id}'
+        gdown.download(url, model_file, quiet=False)
+        st.success("✅ Tải model xong!")
+    except Exception as e:
+        st.error(f"❌ Lỗi tải model: {e}")
+        st.stop()
 
 st.set_page_config(page_title="Emotion Detection CNN", page_icon="🤖", layout="wide")
 
@@ -120,5 +124,6 @@ if analyze_button and user_text:
         
         st.dataframe(results_df, use_container_width=True, height=400, hide_index=True)
         st.bar_chart(results_df.head(10).set_index('Cảm xúc')['Xác suất (%)'])
+
 
 st.markdown("🤖 Emotion Detection - CNN Model")
