@@ -160,8 +160,10 @@ if analyze_button and user_text:
         predictions = model.predict(padded, verbose=0)[0]
         
         st.subheader("📊 CHI TIẾT TỪNG NHÃN")
+        
+        # FIX: Thêm .values để convert Series thành array
         results_df = pd.DataFrame({
-            "Cảm xúc": label_map['label_name'],
+            "Cảm xúc": label_map['label_name'].values,
             "Xác suất (%)": (predictions * 100).round(2)
         }).sort_values("Xác suất (%)", ascending=False)
         
