@@ -1,10 +1,20 @@
+# === GỘP 2 PHẦN MODEL ===
+import os
+
+if not os.path.exists('model_cnn.h5') and os.path.exists('model_part1.bin') and os.path.exists('model_part2.bin'):
+    with open('model_part1.bin', 'rb') as f:
+        data1 = f.read()
+    with open('model_part2.bin', 'rb') as f:
+        data2 = f.read()
+    with open('model_cnn.h5', 'wb') as f:
+        f.write(data1 + data2)
+# === HẾT GỘP ===
 
 import streamlit as st
 import numpy as np
 import pandas as pd
 import pickle
 import re
-import os
 from tensorflow import keras
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import warnings
@@ -16,7 +26,7 @@ st.title("🤖 Phân Tích Cảm Xúc Văn Bản")
 st.markdown("**Model:** CNN | **Nhãn:** 28 cảm xúc | **Dataset:** GoEmotions")
 st.markdown("---")
 
-# Load model - Cached để chỉ load 1 lần
+# Load model - Cached
 @st.cache_resource
 def load_models():
     try:
@@ -25,10 +35,6 @@ def load_models():
             tokenizer = pickle.load(f)
         label_map = pd.read_csv('label_map.csv')
         return model, tokenizer, label_map
-    except FileNotFoundError as e:
-        st.error(f"❌ Lỗi: File không tìm thấy - {str(e)}")
-        st.info("📁 Cần upload: model_cnn.h5, tokenizer.pkl, label_map.csv")
-        return None, None, None
     except Exception as e:
         st.error(f"❌ Lỗi: {str(e)}")
         return None, None, None
