@@ -56,6 +56,42 @@ def normalize_text(text):
     text = " ".join(text.split())
     return text
 
+# Dictionary emoji phù hợp với cảm xúc
+emotion_emoji = {
+    'admiration': '😍',
+    'amusement': '😂',
+    'anger': '😠',
+    'annoyance': '😤',
+    'approval': '👍',
+    'caring': '🤗',
+    'confusion': '😕',
+    'curiosity': '🤔',
+    'desire': '😍',
+    'disappointment': '😞',
+    'disapproval': '👎',
+    'disgust': '🤮',
+    'embarrassment': '😳',
+    'excitement': '🎉',
+    'fear': '😨',
+    'gratitude': '🙏',
+    'grief': '😢',
+    'happiness': '😄',
+    'hope': '🌟',
+    'horror': '😱',
+    'joy': '😊',
+    'love': '❤️',
+    'neutral': '😐',
+    'nostalgia': '🌅',
+    'optimism': '🌈',
+    'pride': '🏆',
+    'realization': '💡',
+    'relief': '😌',
+    'remorse': '😔',
+    'sadness': '😢',
+    'surprise': '😲',
+    'trust': '🤝',
+}
+
 # Load models
 with st.spinner("⏳ Đang tải CNN..."):
     model, tokenizer, label_map = load_models()
@@ -108,47 +144,11 @@ with col2:
                 
                 emotions = label_map.iloc[detected_idx]['label_name'].tolist()
                 
-                # Dictionary emoji phù hợp với cảm xúc
-emotion_emoji = {
-    'admiration': '😍',
-    'amusement': '😂',
-    'anger': '😠',
-    'annoyance': '😤',
-    'approval': '👍',
-    'caring': '🤗',
-    'confusion': '😕',
-    'curiosity': '🤔',
-    'desire': '😍',
-    'disappointment': '😞',
-    'disapproval': '👎',
-    'disgust': '🤮',
-    'embarrassment': '😳',
-    'excitement': '🎉',
-    'fear': '😨',
-    'gratitude': '🙏',
-    'grief': '😢',
-    'happiness': '😄',
-    'hope': '🌟',
-    'horror': '😱',
-    'joy': '😊',
-    'love': '❤️',
-    'neutral': '😐',
-    'nostalgia': '🌅',
-    'optimism': '🌈',
-    'pride': '🏆',
-    'realization': '💡',
-    'relief': '😌',
-    'remorse': '😔',
-    'sadness': '😢',
-    'surprise': '😲',
-    'trust': '🤝',
-}
-
-st.success(f"✅ Phát hiện {len(emotions)} cảm xúc")
-for e in emotions[:5]:
-    emotion_name = str(e).lower().strip()
-    emoji = emotion_emoji.get(emotion_name, '😊')
-    st.info(f"{emoji} {str(e).capitalize()}")
+                st.success(f"✅ Phát hiện {len(emotions)} cảm xúc")
+                for e in emotions[:5]:
+                    emotion_name = str(e).lower().strip()
+                    emoji = emotion_emoji.get(emotion_name, '😊')
+                    st.info(f"{emoji} {str(e).capitalize()}")
 
 st.markdown("---")
 
@@ -169,4 +169,3 @@ if analyze_button and user_text:
         st.bar_chart(results_df.head(10).set_index("Cảm xúc")["Xác suất (%)"])
 
 st.markdown("🤖 Emotion Detection - CNN Model")
-
