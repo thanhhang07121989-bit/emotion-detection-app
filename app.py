@@ -28,7 +28,7 @@ prepare_model()
 st.set_page_config(page_title="Emotion Detection CNN", page_icon="🤖", layout="wide")
 
 st.title("🤖 Phân Tích Cảm Xúc Văn Bản")
-st.markdown("**Model:** CNN | **Nhãn:** 28 cảm xúc | **Dataset:** GoEmotions")
+st.markdown("**Model:** CNN | **Nhãn:** 32 cảm xúc | **Dataset:** GoEmotions")
 st.markdown("---")
 
 # Load model
@@ -190,3 +190,4 @@ if analyze_button and user_text:
             st.error(f"❌ Lỗi phân tích: {str(e)}")
 
 st.markdown("🤖 Emotion Detection - CNN Model")
+
