@@ -4,26 +4,11 @@ import numpy as np
 import pandas as pd
 import pickle
 import re
+import os
 from tensorflow import keras
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import warnings
 warnings.filterwarnings('ignore')
-
-import gdown
-import tempfile
-
-# Download model từ Google Drive
-model_file = 'model_cnn.h5'
-if not os.path.exists(model_file):
-    try:
-        st.warning("📥 Đang tải model từ Google Drive (lần đầu ~3-5 phút)...")
-        file_id = '1vjCqFWmWEQeVEofVJvn-J6eNhE4GdiEI'
-        url = f'https://drive.google.com/uc?id={file_id}'
-        gdown.download(url, model_file, quiet=False)
-        st.success("✅ Tải model xong!")
-    except Exception as e:
-        st.error(f"❌ Lỗi tải model: {e}")
-        st.stop()
 
 st.set_page_config(page_title="Emotion Detection CNN", page_icon="🤖", layout="wide")
 
@@ -31,7 +16,7 @@ st.title("🤖 Phân Tích Cảm Xúc Văn Bản")
 st.markdown("**Model:** CNN | **Nhãn:** 28 cảm xúc | **Dataset:** GoEmotions")
 st.markdown("---")
 
-# Load model
+# Load model - Cached để chỉ load 1 lần
 @st.cache_resource
 def load_models():
     try:
@@ -40,6 +25,10 @@ def load_models():
             tokenizer = pickle.load(f)
         label_map = pd.read_csv('label_map.csv')
         return model, tokenizer, label_map
+    except FileNotFoundError as e:
+        st.error(f"❌ Lỗi: File không tìm thấy - {str(e)}")
+        st.info("📁 Cần upload: model_cnn.h5, tokenizer.pkl, label_map.csv")
+        return None, None, None
     except Exception as e:
         st.error(f"❌ Lỗi: {str(e)}")
         return None, None, None
@@ -50,9 +39,10 @@ def normalize_text(text):
     text = text.lower()
     text = re.sub(r'http\S+|www\S+', '', text)
     text = re.sub(r'@\w+|#\w+', '', text)
-    text = ' '.join(text.split())
+    text = " ".join(text.split())
     return text
 
+# Load models
 with st.spinner("⏳ Đang tải CNN..."):
     model, tokenizer, label_map = load_models()
 
@@ -61,6 +51,7 @@ if model is None:
 
 st.success("✅ Model sẵn sàng!")
 
+# Giao diện
 col1, col2 = st.columns([1.2, 1], gap="large")
 
 with col1:
@@ -118,12 +109,11 @@ if analyze_button and user_text:
         
         st.subheader("📊 CHI TIẾT TỪNG NHÃN")
         results_df = pd.DataFrame({
-            'Cảm xúc': label_map['label_name'],
-            'Xác suất (%)': (predictions * 100).round(2)
-        }).sort_values('Xác suất (%)', ascending=False)
+            "Cảm xúc": label_map['label_name'],
+            "Xác suất (%)": (predictions * 100).round(2)
+        }).sort_values("Xác suất (%)", ascending=False)
         
         st.dataframe(results_df, use_container_width=True, height=400, hide_index=True)
-        st.bar_chart(results_df.head(10).set_index('Cảm xúc')['Xác suất (%)'])
-
+        st.bar_chart(results_df.head(10).set_index("Cảm xúc")["Xác suất (%)"])
 
 st.markdown("🤖 Emotion Detection - CNN Model")
