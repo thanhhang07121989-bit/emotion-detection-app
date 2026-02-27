@@ -110,7 +110,7 @@ st.success("✅ Model sẵn sàng!")
 
 # ====== NEW: SAFE LABEL LOOKUP + NEUTRAL RULE ======
 id2label = dict(zip(label_map["label_id"], label_map["label_name"]))
-NEUTRAL_ID = 21
+NEUTRAL_ID = 27
 
 # Bạn chỉnh 2 tham số này để “đỡ sai”
 UNCERTAIN_CUTOFF_DEFAULT = 0.45  # 0.40/0.45/0.50
@@ -221,5 +221,6 @@ if analyze_button and user_text:
             st.error(f"❌ Lỗi phân tích: {str(e)}")
 
 st.markdown("🤖 Emotion Detection - CNN Model")
+
 
 
