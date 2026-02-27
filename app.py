@@ -58,36 +58,35 @@ def normalize_text(text):
 
 # Dictionary emoji phù hợp với cảm xúc (28 nhãn)
 emotion_emoji = {
-    'admiration': '😍',
-    'amusement': '😂',
-    'anger': '😠',
-    'annoyance': '😤',
-    'approval': '👍',
-    'caring': '🤗',
-    'confusion': '😕',
-    'curiosity': '🤔',
-    'desire': '❤️',
-    'disappointment': '😞',
-    'disapproval': '👎',
-    'disgust': '🤮',
-    'embarrassment': '😳',
-    'excitement': '🎉',
-    'fear': '😨',
-    'gratitude': '🙏',
-    'grief': '😭',
-    'hope': '🌟',
-    'horror': '😱',
-    'joy': '😊',
-    'love': '❤️',
-    'neutral': '😐',
-    'nostalgia': '🌅',
-    'optimism': '🌈',
-    'pride': '🏆',
-    'realization': '💡',
-    'relief': '😌',
-    'remorse': '😔',
+    "admiration": "😍",
+    "amusement": "😂",
+    "anger": "😠",
+    "annoyance": "😤",
+    "approval": "👍",
+    "caring": "🤗",
+    "confusion": "😕",
+    "curiosity": "🤔",
+    "desire": "❤️",
+    "disappointment": "😞",
+    "disapproval": "👎",
+    "disgust": "🤮",
+    "embarrassment": "😳",
+    "excitement": "🎉",
+    "fear": "😨",
+    "gratitude": "🙏",
+    "grief": "😭",
+    "joy": "😊",
+    "love": "❤️",
+    "nervousness": "😰",
+    "optimism": "🌈",
+    "pride": "🏆",
+    "realization": "💡",
+    "relief": "😌",
+    "remorse": "😔",
+    "sadness": "😢",
+    "surprise": "😲",
+    "neutral": "😐",
 }
-
 # Load models
 with st.spinner("⏳ Đang tải CNN..."):
     model, tokenizer, label_map = load_models()
@@ -222,4 +221,5 @@ if analyze_button and user_text:
             st.error(f"❌ Lỗi phân tích: {str(e)}")
 
 st.markdown("🤖 Emotion Detection - CNN Model")
+
 
