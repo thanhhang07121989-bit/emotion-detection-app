@@ -77,7 +77,7 @@ emotion_emoji = {
     'grief': '😭',
     'hope': '🌟',
     'horror': '😱',
-    'joy': '����',
+    'joy': '😊',
     'love': '❤️',
     'neutral': '😐',
     'nostalgia': '🌅',
@@ -222,3 +222,4 @@ if analyze_button and user_text:
             st.error(f"❌ Lỗi phân tích: {str(e)}")
 
 st.markdown("🤖 Emotion Detection - CNN Model")
+
