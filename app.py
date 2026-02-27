@@ -66,7 +66,7 @@ emotion_emoji = {
     'caring': '🤗',
     'confusion': '😕',
     'curiosity': '🤔',
-    'desire': '😍',
+    'desire': '❤️',
     'disappointment': '😞',
     'disapproval': '👎',
     'disgust': '🤮',
@@ -74,7 +74,7 @@ emotion_emoji = {
     'excitement': '🎉',
     'fear': '😨',
     'gratitude': '🙏',
-    'grief': '😢',
+    'grief': '😭',
     'hope': '🌟',
     'horror': '😱',
     'joy': '😊',
@@ -93,6 +93,18 @@ with st.spinner("⏳ Đang tải CNN..."):
     model, tokenizer, label_map = load_models()
 
 if model is None:
+    st.stop()
+
+# ====== VALIDATION ======
+n_classes = int(model.output_shape[-1])
+n_labels = len(label_map)
+
+if n_labels != n_classes:
+    st.error(
+        f"❌ label_map.csv KHÔNG KHỚP model!\n"
+        f"- Model output: {n_classes}\n"
+        f"- label_map rows: {n_labels}"
+    )
     st.stop()
 
 st.success("✅ Model sẵn sàng!")
@@ -128,7 +140,8 @@ with col2:
             with st.spinner("⏳ Đang phân tích..."):
                 # Tokenize
                 seq = tokenizer.texts_to_sequences([cleaned_text])
-                padded = pad_sequences(seq, maxlen=100)
+                # FIX: Thêm padding='post', truncating='post'
+                padded = pad_sequences(seq, maxlen=100, padding='post', truncating='post')
                 
                 # Predict
                 predictions = model.predict(padded, verbose=0)[0]
@@ -139,12 +152,13 @@ with col2:
                     detected_idx = [np.argmax(predictions)]
                 
                 emotions = label_map.iloc[detected_idx]['label_name'].tolist()
+                scores = predictions[detected_idx]
                 
                 st.success(f"✅ Phát hiện {len(emotions)} cảm xúc")
-                for e in emotions[:5]:
+                for e, score in zip(emotions[:5], scores[:5]):
                     emotion_name = str(e).lower().strip()
                     emoji = emotion_emoji.get(emotion_name, '😊')
-                    st.info(f"{emoji} {str(e).capitalize()}")
+                    st.info(f"{emoji} {str(e).capitalize()} ({score*100:.1f}%)")
 
 st.markdown("---")
 
@@ -153,19 +167,20 @@ if analyze_button and user_text:
     if len(cleaned_text.split()) >= 3:
         try:
             seq = tokenizer.texts_to_sequences([cleaned_text])
-            padded = pad_sequences(seq, maxlen=100)
+            # FIX: Thêm padding='post', truncating='post'
+            padded = pad_sequences(seq, maxlen=100, padding='post', truncating='post')
             predictions = model.predict(padded, verbose=0)[0]
             
             st.subheader("📊 CHI TIẾT TỪNG NHÃN")
             
-            # Tạo DataFrame an toàn
+            # Tạo DataFrame - FIX: Bỏ min_len trick
             emotion_names = label_map['label_name'].values
             scores = (predictions * 100).round(2)
             
-            # Ensure same length
-            min_len = min(len(emotion_names), len(scores))
-            emotion_names = emotion_names[:min_len]
-            scores = scores[:min_len]
+            # Check khớp
+            if len(emotion_names) != len(scores):
+                st.error(f"❌ Mismatch: {len(emotion_names)} labels ≠ {len(scores)} scores")
+                st.stop()
             
             results_df = pd.DataFrame({
                 "Cảm xúc": emotion_names,
@@ -174,7 +189,7 @@ if analyze_button and user_text:
             
             st.dataframe(results_df, use_container_width=True, height=400, hide_index=True)
             
-            # Biểu đồ - Safe version
+            # Biểu đồ
             try:
                 chart_data = results_df.head(10).copy()
                 chart_data = chart_data.set_index("Cảm xúc")
@@ -186,6 +201,3 @@ if analyze_button and user_text:
             st.error(f"❌ Lỗi phân tích: {str(e)}")
 
 st.markdown("🤖 Emotion Detection - CNN Model")
-
-
-
