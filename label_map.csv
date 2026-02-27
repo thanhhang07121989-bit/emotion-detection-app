@@ -1,33 +1,29 @@
 label_id,label_name
-0,admiration
-1,amusement
-2,anger
-3,annoyance
-4,approval
-5,caring
-6,confusion
-7,curiosity
-8,desire
-9,disappointment
-10,disapproval
-11,disgust
-12,embarrassment
-13,excitement
-14,fear
-15,gratitude
-16,grief
-17,happiness
-18,hope
-19,horror
-20,joy
-21,love
-22,neutral
-23,nostalgia
-24,optimism
-25,pride
-26,realization
-27,relief
-28,remorse
-29,sadness
-30,surprise
-31,trust
+0                 admiration
+1                  amusement
+2                      anger
+3                  annoyance
+4                   approval
+5                     caring
+6                  confusion
+7                  curiosity
+8                     desire
+9             disappointment
+10               disapproval
+11                   disgust
+12             embarrassment
+13                excitement
+14                      fear
+15                 gratitude
+16                     grief
+17                      hope
+18                    horror
+19                       joy
+20                      love
+21                   neutral
+22                 nostalgia
+23                  optimism
+24                     pride
+25               realization
+26                    relief
+27                   remorse
