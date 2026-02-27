@@ -56,7 +56,7 @@ def normalize_text(text):
     text = " ".join(text.split())
     return text
 
-# Dictionary emoji phù hợp với cảm xúc
+# Dictionary emoji phù hợp với cảm xúc (28 nhãn)
 emotion_emoji = {
     'admiration': '😍',
     'amusement': '😂',
@@ -75,7 +75,6 @@ emotion_emoji = {
     'fear': '😨',
     'gratitude': '🙏',
     'grief': '😢',
-    'happiness': '😄',
     'hope': '🌟',
     'horror': '😱',
     'joy': '😊',
@@ -87,9 +86,6 @@ emotion_emoji = {
     'realization': '💡',
     'relief': '😌',
     'remorse': '😔',
-    'sadness': '😢',
-    'surprise': '😲',
-    'trust': '🤝',
 }
 
 # Load models
@@ -190,4 +186,5 @@ if analyze_button and user_text:
             st.error(f"❌ Lỗi phân tích: {str(e)}")
 
 st.markdown("🤖 Emotion Detection - CNN Model")
+
 
