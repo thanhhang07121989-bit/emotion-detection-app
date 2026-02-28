@@ -155,7 +155,7 @@ with col2:
             with st.spinner("⏳ Đang phân tích..."):
                 # Tokenize
                 seq = tokenizer.texts_to_sequences([cleaned_text])
-                padded = pad_sequences(seq, maxlen=100, padding='post', truncating='post')
+                padded = pad_sequences(seq, maxlen=250, padding='post', truncating='post')
 
                 # Predict
                 pred = model.predict(padded, verbose=0)[0]  # (28,)
@@ -221,6 +221,7 @@ if analyze_button and user_text:
             st.error(f"❌ Lỗi phân tích: {str(e)}")
 
 st.markdown("🤖 Emotion Detection - CNN Model")
+
 
 
 
