@@ -4,231 +4,59 @@ import pandas as pd
 import pickle
 import re
 import os
-from datetime import datetime
 from tensorflow import keras
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import warnings
+warnings.filterwarnings('ignore')
 
-warnings.filterwarnings("ignore")
-
-# =========================
-# Helpers: CSS + UI
-# =========================
-def inject_css():
-    st.markdown(
-        """
-        <style>
-          /* Page background */
-          .stApp {
-            background: linear-gradient(180deg, #f6f9ff 0%, #eef3ff 100%);
-          }
-
-          /* Hide Streamlit default header/footer */
-          header, footer { visibility: hidden; }
-
-          /* Top navbar */
-          .topbar {
-            position: sticky;
-            top: 0;
-            z-index: 999;
-            padding: 14px 18px;
-            margin: -1rem -1rem 1rem -1rem;
-            background: linear-gradient(90deg, #2b6cb0 0%, #3182ce 55%, #2c5282 100%);
-            border-bottom: 1px solid rgba(255,255,255,.25);
-            color: white;
-          }
-          .topbar .row {
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap: 14px;
-          }
-          .brand {
-            display:flex;
-            align-items:center;
-            gap: 10px;
-            font-weight: 800;
-            font-size: 22px;
-            letter-spacing: .2px;
-          }
-          .nav {
-            display:flex;
-            gap: 18px;
-            font-weight: 600;
-            opacity: .95;
-          }
-          .nav a {
-            color: white !important;
-            text-decoration: none !important;
-            padding: 6px 10px;
-            border-radius: 10px;
-          }
-          .nav a.active, .nav a:hover {
-            background: rgba(255,255,255,.16);
-          }
-          .userchip {
-            display:flex;
-            align-items:center;
-            gap: 10px;
-            background: rgba(255,255,255,.14);
-            padding: 8px 12px;
-            border-radius: 999px;
-            font-weight: 600;
-          }
-          .avatar {
-            width: 28px; height: 28px;
-            border-radius: 50%;
-            background: rgba(255,255,255,.75);
-            display:inline-block;
-          }
-
-          /* Cards */
-          .card {
-            background: white;
-            border: 1px solid rgba(15, 23, 42, .08);
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
-          }
-          .card h3 {
-            margin: 0 0 10px 0;
-            font-size: 18px;
-          }
-          .muted {
-            color: rgba(15, 23, 42, .65);
-            font-size: 13px;
-          }
-
-          /* Result header */
-          .result-title {
-            display:flex;
-            align-items:center;
-            gap: 12px;
-            margin-bottom: 8px;
-          }
-          .emoji-badge {
-            width: 52px; height: 52px;
-            border-radius: 16px;
-            background: #ebf8ff;
-            display:flex; align-items:center; justify-content:center;
-            font-size: 28px;
-            border: 1px solid rgba(49,130,206,.25);
-          }
-          .big-label {
-            font-size: 30px;
-            font-weight: 900;
-            margin: 0;
-            line-height: 1.1;
-          }
-
-          /* Horizontal bar list */
-          .barrow {
-            display:flex;
-            align-items:center;
-            gap: 10px;
-            margin: 10px 0;
-          }
-          .barlabel {
-            width: 120px;
-            font-weight: 700;
-          }
-          .barwrap {
-            flex: 1;
-            background: #edf2f7;
-            border-radius: 999px;
-            height: 12px;
-            overflow: hidden;
-            border: 1px solid rgba(15,23,42,.06);
-          }
-          .barfill {
-            height: 100%;
-            border-radius: 999px;
-          }
-          .barpct {
-            width: 60px;
-            text-align:right;
-            font-weight: 700;
-            color: rgba(15, 23, 42, .75);
-          }
-
-          /* Small KPI */
-          .kpi {
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            padding: 12px 14px;
-            border-radius: 14px;
-            background: #f8fafc;
-            border: 1px solid rgba(15,23,42,.06);
-          }
-          .kpi .v { font-weight: 900; font-size: 18px; }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def render_topbar(active="Dashboard"):
-    st.markdown(
-        f"""
-        <div class="topbar">
-          <div class="row">
-            <div class="brand">
-              <span style="filter: drop-shadow(0 6px 16px rgba(0,0,0,.25));">🌀</span>
-              <span>Emotion Detection System</span>
-            </div>
-            <div class="nav">
-              <a class="{ 'active' if active=='Dashboard' else '' }" href="#">Dashboard</a>
-              <a class="{ 'active' if active=='Upload' else '' }" href="#">Upload</a>
-              <a class="{ 'active' if active=='Reports' else '' }" href="#">Reports</a>
-            </div>
-            <div class="userchip">
-              <span class="avatar"></span>
-              <span>Welcome, User</span>
-            </div>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-# =========================
-# Model prep (merge parts)
-# =========================
+# === GỘP 2 PHẦN MODEL ===
 @st.cache_resource
 def prepare_model():
-    if not os.path.exists("model_cnn.h5"):
-        if os.path.exists("model_part1.bin") and os.path.exists("model_part2.bin"):
-            with open("model_part1.bin", "rb") as f:
+    if not os.path.exists('model_cnn.h5'):
+        if os.path.exists('model_part1.bin') and os.path.exists('model_part2.bin'):
+            with open('model_part1.bin', 'rb') as f:
                 data1 = f.read()
-            with open("model_part2.bin", "rb") as f:
+            with open('model_part2.bin', 'rb') as f:
                 data2 = f.read()
-            with open("model_cnn.h5", "wb") as f:
+            with open('model_cnn.h5', 'wb') as f:
                 f.write(data1 + data2)
     return True
 
+prepare_model()
+# === HẾT GỘP ===
 
+st.set_page_config(page_title="Emotion Detection CNN", page_icon="🤖", layout="wide")
+
+st.title("🤖 Phân Tích Cảm Xúc Văn Bản")
+st.markdown("**Model:** CNN | **Nhãn:** 28 cảm xúc | **Dataset:** GoEmotions")
+st.markdown("---")
+
+# Load model
 @st.cache_resource
 def load_models():
-    model = keras.models.load_model("model_cnn.h5")
-    with open("tokenizer.pkl", "rb") as f:
-        tokenizer = pickle.load(f)
-    label_map = pd.read_csv("label_map.csv")
-    return model, tokenizer, label_map
+    try:
+        model = keras.models.load_model('model_cnn.h5')
 
+        with open('tokenizer.pkl', 'rb') as f:
+            tokenizer = pickle.load(f)
 
-def normalize_text(text: str) -> str:
+        label_map = pd.read_csv('label_map.csv')
+
+        return model, tokenizer, label_map
+    except Exception as e:
+        st.error(f"❌ Lỗi: {str(e)}")
+        return None, None, None
+
+def normalize_text(text):
     if not text:
         return ""
     text = text.lower()
-    text = re.sub(r"http\S+|www\S+", "", text)
-    text = re.sub(r"@\w+|#\w+", "", text)
+    text = re.sub(r'http\S+|www\S+', '', text)
+    text = re.sub(r'@\w+|#\w+', '', text)
     text = " ".join(text.split())
     return text
 
-
-# Emoji map (28 labels)
+# Dictionary emoji phù hợp với cảm xúc (28 nhãn)
 emotion_emoji = {
     "admiration": "😍",
     "amusement": "😂",
@@ -259,38 +87,17 @@ emotion_emoji = {
     "surprise": "😲",
     "neutral": "😐",
 }
+# Load models
+with st.spinner("⏳ Đang tải CNN..."):
+    model, tokenizer, label_map = load_models()
 
-# Color palette for bars (fallback)
-emotion_color = {
-    "joy": "#f6ad55",
-    "gratitude": "#68d391",
-    "sadness": "#63b3ed",
-    "anger": "#fc8181",
-    "fear": "#b794f4",
-    "surprise": "#4fd1c5",
-    "neutral": "#a0aec0",
-}
+if model is None:
+    st.stop()
 
-
-# =========================
-# Streamlit page
-# =========================
-st.set_page_config(page_title="Emotion Detection System", page_icon="🌀", layout="wide")
-inject_css()
-render_topbar(active="Dashboard")
-
-prepare_model()
-
-with st.spinner("⏳ Đang tải mô hình..."):
-    try:
-        model, tokenizer, label_map = load_models()
-    except Exception as e:
-        st.error(f"❌ Không load được model/tokenizer/label_map: {e}")
-        st.stop()
-
-# Validate label map vs model
+# ====== VALIDATION ======
 n_classes = int(model.output_shape[-1])
-n_labels = int(len(label_map))
+n_labels = len(label_map)
+
 if n_labels != n_classes:
     st.error(
         f"❌ label_map.csv KHÔNG KHỚP model!\n"
@@ -299,68 +106,64 @@ if n_labels != n_classes:
     )
     st.stop()
 
+st.success("✅ Model sẵn sàng!")
+
+# ====== NEW: SAFE LABEL LOOKUP + NEUTRAL RULE ======
 id2label = dict(zip(label_map["label_id"], label_map["label_name"]))
 NEUTRAL_ID = 27
 
-# Max_len: ưu tiên theo model input_shape, fallback 250
-try:
-    MAX_LEN = int(model.input_shape[1])
-except Exception:
-    MAX_LEN = 250
+# Bạn chỉnh 2 tham số này để “đỡ sai”
+UNCERTAIN_CUTOFF_DEFAULT = 0.45  # 0.40/0.45/0.50
+TOP_K_DEFAULT = 3
 
-# Session state for "Recent Analyses"
-if "recent" not in st.session_state:
-    st.session_state.recent = []  # list of dicts
+# Giao diện
+col1, col2 = st.columns([1.2, 1], gap="large")
 
-# Layout: left controls + right result, bottom analytics
-left, right = st.columns([0.95, 1.35], gap="large")
+with col1:
+    st.subheader("📝 NHẬP VĂN BẢN")
+    user_text = st.text_area(
+        label="Nhập câu tiếng Anh",
+        placeholder="Ví dụ: I am so happy and grateful today!",
+        height=250,
+        label_visibility="collapsed"
+    )
 
-with left:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### Analyze Text for Emotion")
-    user_text = st.text_area("Enter your text here...", height=140, label_visibility="collapsed")
+    st.subheader("⚙️ THRESHOLD")
+    threshold = st.slider("", 0.0, 1.0, 0.5, 0.05, label_visibility="collapsed")
+    st.metric("Threshold hiện tại", f"{threshold:.2f}")
 
-    c1, c2 = st.columns(2)
-    with c1:
-        threshold = st.slider("Threshold", 0.0, 1.0, 0.50, 0.05)
-    with c2:
-        uncertain_cutoff = st.slider("Uncertain cutoff", 0.0, 1.0, 0.45, 0.05)
+    # NEW: thêm cutoff + top_k để bạn tune nhanh
+    st.subheader("🧰 TINH CHỈNH (anti-sai)")
+    uncertain_cutoff = st.slider(
+        "Uncertain cutoff (max_score < cutoff => Neutral)",
+        0.0, 1.0, UNCERTAIN_CUTOFF_DEFAULT, 0.05
+    )
+    top_k = st.slider("Top-k labels", 1, 10, TOP_K_DEFAULT, 1)
 
-    top_k = st.slider("Top-k labels", 1, 10, 3, 1)
-    analyze = st.button("Analyze Text", use_container_width=True)
-    st.markdown(f'<div class="muted">Model: CNN | Labels: 28 | max_len: {MAX_LEN}</div>', unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    analyze_button = st.button("🚀 PHÂN TÍCH CẢM XÚC", use_container_width=True)
 
-    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+with col2:
+    st.subheader("😊 KẾT QUẢ")
 
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### Upload Audio or Image (demo UI)")
-    u1, u2 = st.columns(2)
-    with u1:
-        st.button("🎙️ Upload Audio", use_container_width=True, disabled=True)
-    with u2:
-        st.button("🖼️ Upload Image", use_container_width=True, disabled=True)
-    st.markdown('<div class="muted">Chức năng này chỉ là giao diện minh hoạ (model hiện tại xử lý text).</div>', unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    if analyze_button and user_text:
+        cleaned_text = normalize_text(user_text)
+        word_count = len(cleaned_text.split())
 
-with right:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### Emotion Analysis Result")
-
-    if analyze and user_text.strip():
-        cleaned = normalize_text(user_text)
-        if len(cleaned.split()) < 3:
-            st.warning("⚠️ Văn bản quá ngắn (ít hơn 3 từ).")
+        if word_count < 3:
+            st.warning(f"⚠️ Text quá ngắn ({word_count} từ)")
         else:
             with st.spinner("⏳ Đang phân tích..."):
-                seq = tokenizer.texts_to_sequences([cleaned])
-                padded = pad_sequences(seq, maxlen=MAX_LEN, padding="post", truncating="post")
-                pred = model.predict(padded, verbose=0)[0]
+                # Tokenize
+                seq = tokenizer.texts_to_sequences([cleaned_text])
+                padded = pad_sequences(seq, maxlen=250, padding='post', truncating='post')
+
+                # Predict
+                pred = model.predict(padded, verbose=0)[0]  # (28,)
 
                 max_score = float(np.max(pred))
                 max_idx = int(np.argmax(pred))
 
-                # Filter logic
+                # ===== NEW FILTER LOGIC =====
                 if max_score < float(uncertain_cutoff):
                     detected_idx = [NEUTRAL_ID]
                 else:
@@ -372,129 +175,49 @@ with right:
                 emotions = [id2label[int(i)] for i in detected_idx]
                 scores = [float(pred[int(i)]) for i in detected_idx]
 
-                top_emotion = emotions[0]
-                top_score = scores[0]
-                emoji = emotion_emoji.get(str(top_emotion).lower().strip(), "😊")
+                # Debug nhỏ để bạn biết model đang tự tin đến đâu
+                st.caption(f"DEBUG: max_score={max_score:.3f} | max_label={id2label[max_idx]} | threshold={threshold:.2f} | cutoff={uncertain_cutoff:.2f}")
 
-                st.markdown(
-                    f"""
-                    <div class="result-title">
-                      <div class="emoji-badge">{emoji}</div>
-                      <div>
-                        <div class="muted">Detected Emotion</div>
-                        <div class="big-label">{str(top_emotion).capitalize()}</div>
-                      </div>
-                    </div>
-                    <div class="muted">Confidence (top-1): {top_score*100:.1f}%</div>
-                    <div style="height:10px"></div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+                st.success(f"✅ Phát hiện {len(emotions)} cảm xúc")
+                for e, score in zip(emotions, scores):
+                    emotion_name = str(e).lower().strip()
+                    emoji = emotion_emoji.get(emotion_name, '😊')
+                    st.info(f"{emoji} {str(e).capitalize()} ({score*100:.1f}%)")
 
-                st.caption(
-                    f"DEBUG: max_score={max_score:.3f} | max_label={id2label[max_idx]} | "
-                    f"threshold={threshold:.2f} | cutoff={uncertain_cutoff:.2f} | max_len={MAX_LEN}"
-                )
+st.markdown("---")
 
-                # Distribution (bars) for detected labels (or top_k labels)
-                st.markdown("#### Emotion Distribution")
-                for e, s in zip(emotions, scores):
-                    k = str(e).lower().strip()
-                    bar_color = emotion_color.get(k, "#2b6cb0")
-                    st.markdown(
-                        f"""
-                        <div class="barrow">
-                          <div class="barlabel">{emotion_emoji.get(k,"😊")} {str(e).capitalize()}</div>
-                          <div class="barwrap">
-                            <div class="barfill" style="width:{min(max(s,0.0),1.0)*100:.1f}%; background:{bar_color};"></div>
-                          </div>
-                          <div class="barpct">{s*100:.1f}%</div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
+if analyze_button and user_text:
+    cleaned_text = normalize_text(user_text)
+    if len(cleaned_text.split()) >= 3:
+        try:
+            seq = tokenizer.texts_to_sequences([cleaned_text])
+            padded = pad_sequences(seq, maxlen=100, padding='post', truncating='post')
+            predictions = model.predict(padded, verbose=0)[0]
 
-                # Save to recent analyses
-                st.session_state.recent.insert(
-                    0,
-                    {
-                        "text": user_text.strip(),
-                        "detected": str(top_emotion).capitalize(),
-                        "score": f"{top_score*100:.1f}%",
-                        "date": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                    },
-                )
-                st.session_state.recent = st.session_state.recent[:6]
+            st.subheader("📊 CHI TIẾT TỪNG NHÃN")
 
-                # Full label table
-                st.markdown("#### Full label probabilities (28)")
-                emotion_names = label_map["label_name"].values
-                prob_pct = (pred * 100).round(2)
-                results_df = (
-                    pd.DataFrame({"Emotion": emotion_names, "Probability (%)": prob_pct})
-                    .sort_values("Probability (%)", ascending=False)
-                    .reset_index(drop=True)
-                )
-                st.dataframe(results_df, use_container_width=True, height=320, hide_index=True)
+            emotion_names = label_map['label_name'].values
+            scores = (predictions * 100).round(2)
 
-                # Top-10 chart
-                st.markdown("#### Top-10 chart")
-                chart_df = results_df.head(10).set_index("Emotion")
-                st.bar_chart(chart_df)
+            if len(emotion_names) != len(scores):
+                st.error(f"❌ Mismatch: {len(emotion_names)} labels ≠ {len(scores)} scores")
+                st.stop()
 
-    else:
-        st.info("Nhập văn bản ở bên trái và bấm **Analyze Text** để xem kết quả.")
-    st.markdown("</div>", unsafe_allow_html=True)
+            results_df = pd.DataFrame({
+                "Cảm xúc": emotion_names,
+                "Xác suất (%)": scores
+            }).sort_values("Xác suất (%)", ascending=False)
 
-# Bottom row: recent + KPIs
-st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
-b1, b2, b3 = st.columns([1.25, 0.9, 0.9], gap="large")
+            st.dataframe(results_df, use_container_width=True, height=400, hide_index=True)
 
-with b1:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### Recent Analyses")
-    if len(st.session_state.recent) == 0:
-        st.markdown('<div class="muted">Chưa có lịch sử phân tích trong session này.</div>', unsafe_allow_html=True)
-    else:
-        recent_df = pd.DataFrame(st.session_state.recent)[["text", "detected", "date"]]
-        recent_df.columns = ["Text", "Detected Emotion", "Date"]
-        st.dataframe(recent_df, use_container_width=True, height=240, hide_index=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+            try:
+                chart_data = results_df.head(10).copy()
+                chart_data = chart_data.set_index("Cảm xúc")
+                st.bar_chart(chart_data)
+            except Exception as chart_error:
+                st.warning(f"⚠️ Không thể hiển thị biểu đồ: {str(chart_error)}")
 
-with b2:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### Confidence Score")
-    if analyze and user_text.strip() and "pred" in locals():
-        st.markdown(
-            f"""
-            <div class="kpi">
-              <div class="muted">Top-1 confidence</div>
-              <div class="v">{top_score*100:.1f}%</div>
-            </div>
-            <div style="height:10px"></div>
-            """,
-            unsafe_allow_html=True,
-        )
-        # Simple pie-like approximation using Streamlit chart
-        pie_df = pd.DataFrame(
-            {"part": ["Top-1", "Others"], "value": [top_score, max(0.0, 1.0 - top_score)]}
-        ).set_index("part")
-        st.pyplot(None)  # placeholder to keep layout stable if you remove
-        st.bar_chart(pie_df)
-    else:
-        st.markdown('<div class="muted">Chạy phân tích để xem confidence.</div>', unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"❌ Lỗi phân tích: {str(e)}")
 
-with b3:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### Emotion Insights")
-    st.markdown(
-        """
-        <div class="muted">
-          - Mood: theo nhãn top-1<br/>
-          - Keywords/Advice: demo UI (nếu muốn có thật cần thêm module NLP trích keyword)
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("🤖 Emotion Detection - CNN Model")
