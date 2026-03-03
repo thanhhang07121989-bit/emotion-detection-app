@@ -191,7 +191,7 @@ if analyze_button and user_text:
     if len(cleaned_text.split()) >= 3:
         try:
             seq = tokenizer.texts_to_sequences([cleaned_text])
-            padded = pad_sequences(seq, maxlen=100, padding='post', truncating='post')
+            padded = pad_sequences(seq, maxlen=250, padding='post', truncating='post')
             predictions = model.predict(padded, verbose=0)[0]
 
             st.subheader("📊 CHI TIẾT TỪNG NHÃN")
@@ -221,5 +221,6 @@ if analyze_button and user_text:
             st.error(f"❌ Lỗi phân tích: {str(e)}")
 
 st.markdown("🤖 Emotion Detection - CNN Model")
+
 
 
